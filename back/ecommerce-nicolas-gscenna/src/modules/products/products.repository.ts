@@ -70,7 +70,29 @@ export class ProductsRepository {
         },
     ];
 
-    getProducts(): IProduct[] {
-        return this.products;
+    async getProducts(page:number,limit:number): Promise<IProduct[]> {
+        const start = (page-1)*limit;
+        const end = start + limit;
+        return this.products.slice(start,end);
+    }
+    async getProductById(id:number):Promise<IProduct|undefined>{
+        return this.products.find(product=>product.id===id);
+    }
+    async createProduct(product:Omit<IProduct,'id'>):Promise<number>{
+        const id = this.products.length > 0 ? Math.max(...this.products.map(product=>product.id))+1:1;
+        this.products = [...this.products,{id,...product}];
+        return id;
+    }
+    async updateProduct(id:number,product:Omit<IProduct,'id'>):Promise<number|undefined>{
+        const productIndex = this.products.findIndex(product=>product.id===id);
+        if (productIndex==-1)return undefined
+        this.products[productIndex]={id,...product}
+        return id;
+    }
+    async deleteProduct(id:number): Promise <number|undefined>{
+        const productExists = this.products.some(product=>product.id===id)
+        if(!productExists)return undefined
+        this.products = this.products.filter(product=>product.id!=id)
+        return id
     }
 }
