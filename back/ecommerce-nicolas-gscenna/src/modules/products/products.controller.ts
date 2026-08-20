@@ -20,6 +20,10 @@ export class ProductsController {
     createProduct(@Body()product: CreateProductDto){
         return this.productsService.createProduct(product);
     }
+    @Post('seeder')
+    addProducts(){
+        return this.productsService.addProducts();
+    }
     @Put(':id')
     @UseGuards(AuthGuard)
     updateProduct(@Param('id')id: number,@Body()product: CreateProductDto){

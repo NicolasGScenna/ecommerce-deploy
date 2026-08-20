@@ -1,5 +1,8 @@
 import { Injectable } from "@nestjs/common";
 import { IProduct } from "./interfaces/product.interface";
+import { InjectRepository } from "@nestjs/typeorm";
+import { Product } from "src/entities/product.entity";
+import { Repository } from "typeorm";
 
 @Injectable()
 export class ProductsRepository {
@@ -69,6 +72,7 @@ export class ProductsRepository {
             imgUrl: "https://images.unsplash.com/photo-1583454110551-21f2fa2afe61",
         },
     ];
+    constructor(@InjectRepository(Product)private readonly productRepository: Repository<Product>){}
 
     async getProducts(page:number,limit:number): Promise<IProduct[]> {
         const start = (page-1)*limit;
@@ -94,5 +98,8 @@ export class ProductsRepository {
         if(!productExists)return undefined
         this.products = this.products.filter(product=>product.id!=id)
         return id
+    }
+    async addProducts(products: Omit<Product,'id'|'orderDetails'|'imgUrl'>[]):Promise<Product[]>{
+        return this.productRepository.save(products)
     }
 }
