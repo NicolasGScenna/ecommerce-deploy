@@ -8,12 +8,24 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { CategoriesModules } from './modules/categories/categories.module';
 import { OrdersModule } from './modules/orders/orders.module';
 import { FilesModule } from './modules/files/files.module';
+import { JwtModule } from '@nestjs/jwt';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal:true,
       load:[typeOrmConfig],
+    }),
+    JwtModule.registerAsync({
+      global:true,
+      imports:[ConfigModule],
+      inject:[ConfigService],
+      useFactory:(configService:ConfigService)=>({
+        secret: configService.get<string>('JWT_SECRET'),
+        signOptions:{
+          expiresIn:'1h'
+        }
+      })
     }),
     TypeOrmModule.forRootAsync({
       inject: [ConfigService],

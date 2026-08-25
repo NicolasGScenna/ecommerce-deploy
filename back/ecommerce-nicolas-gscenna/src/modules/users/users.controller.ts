@@ -20,10 +20,7 @@ export class UsersController {
     if(!user) throw new NotFoundException ('Usuario no encontrado')
     return user;
   }
-  @Post()
-  createUser(@Body() user: CreateUserDto){
-    return this.usersService.createUser(user);
-  }
+
   @Put(':id')
   @UseGuards(AuthGuard)
   async updateUser(@Param()params: IdParamDto,@Body() user: CreateUserDto){
