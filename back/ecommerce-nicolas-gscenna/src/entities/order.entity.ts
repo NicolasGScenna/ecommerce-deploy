@@ -3,8 +3,7 @@ import {
   PrimaryGeneratedColumn,
   Column,
   ManyToOne,
-  OneToOne,
-  JoinColumn,
+  OneToMany
 } from 'typeorm';
 
 import { User } from '../entities/user.entity';
@@ -24,12 +23,13 @@ export class Order {
 
   @Column({
     type: 'timestamp',
+    default: ()=> 'CURRENT_TIMESTAMP'
   })
   date: Date;
 
-  @OneToOne(
+@OneToMany(
     () => OrderDetail,
     orderDetail => orderDetail.order,
-  )
-  orderDetail: OrderDetail;
+)
+orderDetails: OrderDetail[];
 }

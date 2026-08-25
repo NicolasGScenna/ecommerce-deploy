@@ -1,6 +1,6 @@
 import { Injectable } from "@nestjs/common";
 import { UsersRepository } from "./users.repository";
-import { IUser } from "./interfaces/user.interface";
+import { User } from "src/entities/user.entity";
 
 @Injectable()
 export class UsersService {
@@ -8,19 +8,19 @@ export class UsersService {
         private readonly usersRepository: UsersRepository
     ){}
 
-    async getUsers(page:number,limit:number): Promise<Omit<IUser,'password'>[]>{
+    async getUsers(page:number,limit:number): Promise<Omit<User,'password'>[]>{
         return this.usersRepository.getUsers(page,limit);
     }
-    async getUserById(id:number): Promise<Omit<IUser,'password'> | undefined>{
+    async getUserById(id:string): Promise<Omit<User,'password'|'orders'> | undefined>{
         return this.usersRepository.getById(id);
     }
-    async createUser(user: Omit<IUser,'id'>): Promise<number> {
+    async createUser(user: Omit<User,'id'|'orders'>): Promise<string> {
         return this.usersRepository.createUser(user);
     }
-    async updateUser(id:number, user: Omit<IUser,'id'>):Promise< number | undefined >{
+    async updateUser(id:string, user: Omit<User,'id'|'orders'>):Promise< string | undefined >{
         return this.usersRepository.updateUser(id,user);
     }
-    async deleteUser(id:number):Promise<number|undefined>{
+    async deleteUser(id:string):Promise<string|undefined>{
         return this.usersRepository.deleteUser(id);
     }
     

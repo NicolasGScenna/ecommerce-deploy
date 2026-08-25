@@ -1,7 +1,9 @@
 import { Injectable } from "@nestjs/common";
+import { DeepPartial } from "typeorm";
+
 import { ProductsRepository } from "./products.repository";
-import { IProduct } from "./interfaces/product.interface";
 import { CategoriesRepository } from "../categories/categories.repository";
+import { Product } from "../../entities/product.entity"
 
 const products = [
       {
@@ -92,42 +94,93 @@ const products = [
 
 @Injectable()
 export class ProductsService {
-    constructor(private readonly productsRepository: ProductsRepository,private readonly categoriesRepository: CategoriesRepository
-    ){}
 
-    async getProducts(page:number,limit:number): Promise<IProduct[]> {
-        return this.productsRepository.getProducts(page,limit);
+    constructor(
+        private readonly productsRepository: ProductsRepository,
+        private readonly categoriesRepository: CategoriesRepository,
+    ) {}
+
+    async getProducts(
+        page: number,
+        limit: number,
+    ): Promise<Product[]> {
+
+        return this.productsRepository.getProducts(
+            page,
+            limit,
+        );
     }
-    async getProductById(id:number):Promise <IProduct|undefined>{
-        return this.productsRepository.getProductById(id);
+
+    async getProductById(
+        id: string,
+    ): Promise<Product | null> {
+
+        return this.productsRepository.getById(id);
     }
-    async createProduct(product: Omit<IProduct,'id'>): Promise<number>{
+
+    async createProduct(
+        product: DeepPartial<Product>,
+    ): Promise<string> {
+
         return this.productsRepository.createProduct(product);
     }
 
-    async updateProduct(id:number,product:Omit<IProduct,'id'>):Promise<number|undefined>{
-        return this.productsRepository.updateProduct(id,product);
+    async updateProduct(
+        id: string,
+        product: DeepPartial<Product>,
+    ): Promise<string | undefined> {
+
+        return this.productsRepository.updateProduct(
+            id,
+            product,
+        );
     }
-    async deleteProduct(id:number):Promise<number|undefined>{
+
+    async deleteProduct(
+        id: string,
+    ): Promise<string | undefined> {
+
         return this.productsRepository.deleteProduct(id);
     }
-    async addProducts(){
-        const existingProducts = await this.productsRepository.getProducts(1,200);
-        const categories = await this.categoriesRepository.getCategories();
 
-        const newProducts = products.filter(product=>
-            !existingProducts.some(
-                existingProducts=>
-                    existingProducts.name===product.name
+    async addProducts() {
+
+        const existingProducts =
+            await this.productsRepository.getProducts(1, 200);
+
+        const categories =
+            await this.categoriesRepository.getCategories();
+
+        const newProducts = products
+            .filter(
+                product =>
+                    !existingProducts.some(
+                        existingProduct =>
+                            existingProduct.name === product.name,
+                    ),
             )
-        ).map(product=>{
-            const category = categories.find(
-                category=>
-                    category.name===product.category
-            )
-            if(!category)throw new Error(`Category "${product.category}" not found`)
-            return {...product,category}
-        })
-        return this.productsRepository.addProducts(newProducts)
+            .map(product => {
+
+                const category = categories.find(
+                    category =>
+                        category.name === product.category,
+                );
+
+                if (!category) {
+                    throw new Error(
+                        `Category "${product.category}" not found`,
+                    );
+                }
+
+                return {
+                    name: product.name,
+                    description: product.description,
+                    price: product.price,
+                    stock: product.stock,
+                    category,
+                };
+            });
+
+        return this.productsRepository.addProducts(newProducts);
     }
 }

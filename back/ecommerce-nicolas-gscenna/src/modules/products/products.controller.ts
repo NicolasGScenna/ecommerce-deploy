@@ -1,37 +1,83 @@
-import { Body, Controller, Delete, Get, Param, Post, Put, Query, UseGuards } from "@nestjs/common";
+import {
+    Body,
+    Controller,
+    Delete,
+    Get,
+    NotFoundException,
+    Param,
+    Post,
+    Put,
+    Query,
+    UseGuards,
+
+} from "@nestjs/common";
+
 import { ProductsService } from "./products.service";
 import { CreateProductDto } from "./dto/create-product.dto";
 import { AuthGuard } from "../auth/auth.guard";
+import { IdParamDto } from "src/dto/id-param.dto";
 
 @Controller('products')
 export class ProductsController {
-    constructor(private readonly productsService: ProductsService) {}
+
+    constructor(
+        private readonly productsService: ProductsService,
+    ) {}
 
     @Get()
-    getProducts(@Query('page')page:string='1',@Query('limit')limit:string='5') {
-        return this.productsService.getProducts(Number(page),Number(limit));
+    getProducts(
+        @Query('page') page: string = '1',
+        @Query('limit') limit: string = '5',
+    ) {
+        return this.productsService.getProducts(
+            Number(page),
+            Number(limit),
+        );
     }
+
     @Get(':id')
-    getProductById(@Param('id')id: number){
-        return this.productsService.getProductById(Number(id));
+    async getProductById(
+        @Param() params: IdParamDto,
+    ) {
+        const product = await this.productsService.getProductById(params.id)
+        if(!product) throw new NotFoundException ('Producto no encontrado')
+        return product;
     }
+
     @Post()
     @UseGuards(AuthGuard)
-    createProduct(@Body()product: CreateProductDto){
+    createProduct(
+        @Body() product: CreateProductDto,
+    ) {
         return this.productsService.createProduct(product);
     }
+
     @Post('seeder')
-    addProducts(){
+    addProducts() {
         return this.productsService.addProducts();
     }
+
     @Put(':id')
     @UseGuards(AuthGuard)
-    updateProduct(@Param('id')id: number,@Body()product: CreateProductDto){
-        return this.productsService.updateProduct(Number(id),product);
+    async updateProduct(
+        @Param() params: IdParamDto,
+        @Body() product: CreateProductDto,
+    ) {
+        const productToUpdate = await this.productsService.getProductById(params.id)
+        if(!productToUpdate) throw new NotFoundException ('Producto no encontrado')
+        return this.productsService.updateProduct(
+            params.id,
+            product,
+        );
     }
+
     @Delete(':id')
     @UseGuards(AuthGuard)
-    deleteProduct(@Param('id')id: number){
-        return this.productsService.deleteProduct(Number(id));
+    async deleteProduct(
+        @Param() params: IdParamDto,
+    ) {
+        const product = await this.productsService.getProductById(params.id)
+        if(!product) throw new NotFoundException ('Producto no encontrado')
+        return this.productsService.deleteProduct(params.id);
     }
 }

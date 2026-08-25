@@ -1,105 +1,89 @@
-import { Injectable } from "@nestjs/common";
-import { IProduct } from "./interfaces/product.interface";
-import { InjectRepository } from "@nestjs/typeorm";
-import { Product } from "src/entities/product.entity";
-import { Repository } from "typeorm";
+import { Injectable } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { DeepPartial, Repository } from 'typeorm';
+
+import { Product } from '../../entities/product.entity';
 
 @Injectable()
 export class ProductsRepository {
-    private products: IProduct[] = [
-        {
-            id: 1,
-            name: "Notebook Lenovo IdeaPad 3",
-            description: "Notebook con procesador Intel Core i5, 8 GB de RAM y 256 GB SSD.",
-            price: 899999,
-            stock: true,
-            imgUrl: "https://images.unsplash.com/photo-1496181133206-80ce9b88a853",
-        },
-        {
-            id: 2,
-            name: "Smartphone Samsung Galaxy A54",
-            description: "Teléfono inteligente con pantalla AMOLED de 6.4 pulgadas y cámara de 50 MP.",
-            price: 649999,
-            stock: true,
-            imgUrl: "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9",
-        },
-        {
-            id: 3,
-            name: "Auriculares Sony WH-1000XM5",
-            description: "Auriculares inalámbricos con cancelación activa de ruido.",
-            price: 329999,
-            stock: true,
-            imgUrl: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e",
-        },
-        {
-            id: 4,
-            name: "Cafetera Oster PrimaLatte",
-            description: "Cafetera espresso automática con espumador de leche.",
-            price: 279999,
-            stock: true,
-            imgUrl: "https://images.unsplash.com/photo-1495474472287-4d71bcdd2085",
-        },
-        {
-            id: 5,
-            name: "Zapatillas Adidas Runfalcon",
-            description: "Zapatillas deportivas livianas para running y uso diario.",
-            price: 119999,
-            stock: true,
-            imgUrl: "https://images.unsplash.com/photo-1542291026-7eec264c27ff",
-        },
-        {
-            id: 6,
-            name: "Mochila urbana Samsonite",
-            description: "Mochila resistente con compartimento para notebook de hasta 15 pulgadas.",
-            price: 84999,
-            stock: true,
-            imgUrl: "https://images.unsplash.com/photo-1553062407-98eeb64c6a62",
-        },
-        {
-            id: 7,
-            name: "Set de sábanas de algodón",
-            description: "Juego de sábanas de algodón de 2 plazas, suave y confortable.",
-            price: 59999,
-            stock: true,
-            imgUrl: "https://images.unsplash.com/photo-1631049307264-da0ec9d70304",
-        },
-        {
-            id: 8,
-            name: "Mancuernas ajustables",
-            description: "Par de mancuernas ajustables para entrenamiento en casa.",
-            price: 74999,
-            stock: true,
-            imgUrl: "https://images.unsplash.com/photo-1583454110551-21f2fa2afe61",
-        },
-    ];
-    constructor(@InjectRepository(Product)private readonly productRepository: Repository<Product>){}
+    constructor(
+        @InjectRepository(Product)
+        private readonly productRepository: Repository<Product>,
+    ) {}
 
-    async getProducts(page:number,limit:number): Promise<IProduct[]> {
-        const start = (page-1)*limit;
-        const end = start + limit;
-        return this.products.slice(start,end);
+    async getProducts(
+        page: number,
+        limit: number,
+    ): Promise<Product[]> {
+        return this.productRepository.find({
+            skip: (page - 1) * limit,
+            take: limit,
+            relations: {
+                category: true,
+            },
+        });
     }
-    async getProductById(id:number):Promise<IProduct|undefined>{
-        return this.products.find(product=>product.id===id);
+
+    async getById(
+        id: string,
+    ): Promise<Product | null> {
+        return this.productRepository.findOne({
+            where: { id },
+            relations: {
+                category: true,
+            },
+        });
     }
-    async createProduct(product:Omit<IProduct,'id'>):Promise<number>{
-        const id = this.products.length > 0 ? Math.max(...this.products.map(product=>product.id))+1:1;
-        this.products = [...this.products,{id,...product}];
+
+    async createProduct(
+        product: DeepPartial<Product>,
+    ): Promise<string> {
+        const newProduct =
+            this.productRepository.create(product);
+
+        const savedProduct =
+            await this.productRepository.save(newProduct);
+
+        return savedProduct.id;
+    }
+
+    async updateProduct(
+        id: string,
+        product: DeepPartial<Product>,
+    ): Promise<string | undefined> {
+        const productExists =
+            await this.productRepository.findOne({
+                where: { id },
+            });
+
+        if (!productExists) {
+            return undefined;
+        }
+
+        await this.productRepository.update(id, product);
+
         return id;
     }
-    async updateProduct(id:number,product:Omit<IProduct,'id'>):Promise<number|undefined>{
-        const productIndex = this.products.findIndex(product=>product.id===id);
-        if (productIndex==-1)return undefined
-        this.products[productIndex]={id,...product}
+
+    async deleteProduct(
+        id: string,
+    ): Promise<string | undefined> {
+        const result =
+            await this.productRepository.delete(id);
+
+        if (!result.affected) {
+            return undefined;
+        }
+
         return id;
     }
-    async deleteProduct(id:number): Promise <number|undefined>{
-        const productExists = this.products.some(product=>product.id===id)
-        if(!productExists)return undefined
-        this.products = this.products.filter(product=>product.id!=id)
-        return id
-    }
-    async addProducts(products: Omit<Product,'id'|'orderDetails'|'imgUrl'>[]):Promise<Product[]>{
-        return this.productRepository.save(products)
+
+    async addProducts(
+        products: DeepPartial<Product>[],
+    ): Promise<Product[]> {
+        const newProducts =
+            this.productRepository.create(products);
+
+        return this.productRepository.save(newProducts);
     }
 }
