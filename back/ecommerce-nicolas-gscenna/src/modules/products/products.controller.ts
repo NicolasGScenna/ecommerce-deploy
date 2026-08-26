@@ -19,7 +19,9 @@ import { IdParamDto } from "../../dto/id-param.dto";
 import { RolesGuard } from "../auth/roles.guard";
 import { Roles } from "../../decorators/roles.decorator";
 import { Role } from "../auth/roles.enum";
+import { ApiBearerAuth, ApiTags } from "@nestjs/swagger";
 
+@ApiTags('Products')
 @Controller('products')
 export class ProductsController {
 
@@ -47,6 +49,7 @@ export class ProductsController {
         return product;
     }
 
+    @ApiBearerAuth()
     @Post()
     @UseGuards(AuthGuard)
     createProduct(
@@ -60,6 +63,7 @@ export class ProductsController {
         return this.productsService.addProducts();
     }
 
+    @ApiBearerAuth()
     @Put(':id')
     @Roles(Role.Admin)
     @UseGuards(AuthGuard,RolesGuard)
@@ -75,6 +79,7 @@ export class ProductsController {
         );
     }
 
+    @ApiBearerAuth()
     @Delete(':id')
     @UseGuards(AuthGuard)
     async deleteProduct(
