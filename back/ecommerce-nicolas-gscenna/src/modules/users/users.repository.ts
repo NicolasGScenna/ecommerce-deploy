@@ -1,6 +1,6 @@
 import { Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
-import { User } from "src/entities/user.entity";
+import { User } from "../../entities/user.entity";
 import { Repository } from "typeorm";
 
 @Injectable()
@@ -23,7 +23,7 @@ export class UsersRepository {
             }
        });
        if(!user) return undefined
-       const {password,orders,...userWithoutPassword} = user;
+       const {password,orders,isAdmin,...userWithoutPassword} = user;
 
        return {...userWithoutPassword,
         orders: orders.map(order=>({
@@ -37,7 +37,7 @@ export class UsersRepository {
             where: {email}
         });
     }
-    async createUser(user: Omit<User,'id'|'orders'>): Promise<string> {
+    async createUser(user: Omit<User,'id'|'orders'|'isAdmin'>): Promise<string> {
         const newUser = this.usersRepository.create(user);
         const savedUser = this.usersRepository.save(newUser);
         return (await savedUser).id
@@ -48,7 +48,7 @@ export class UsersRepository {
         if(!result.affected) return undefined
         return id
     }
-    async updateUser(id:string, user: Partial<Omit<User,'id'|'orders'>>):Promise<string|undefined>{
+    async updateUser(id:string, user: Partial<Omit<User,'id'|'orders'|'isAdmin'>>):Promise<string|undefined>{
         const userExists = await this.usersRepository.findOne({
             where: {id}
         })

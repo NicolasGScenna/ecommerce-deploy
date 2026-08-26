@@ -15,7 +15,10 @@ import {
 import { ProductsService } from "./products.service";
 import { CreateProductDto } from "./dto/create-product.dto";
 import { AuthGuard } from "../auth/auth.guard";
-import { IdParamDto } from "src/dto/id-param.dto";
+import { IdParamDto } from "../../dto/id-param.dto";
+import { RolesGuard } from "../auth/roles.guard";
+import { Roles } from "../../decorators/roles.decorator";
+import { Role } from "../auth/roles.enum";
 
 @Controller('products')
 export class ProductsController {
@@ -58,7 +61,8 @@ export class ProductsController {
     }
 
     @Put(':id')
-    @UseGuards(AuthGuard)
+    @Roles(Role.Admin)
+    @UseGuards(AuthGuard,RolesGuard)
     async updateProduct(
         @Param() params: IdParamDto,
         @Body() product: CreateProductDto,

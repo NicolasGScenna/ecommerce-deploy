@@ -1,7 +1,7 @@
 import { Body, Controller, Get, NotFoundException, Param, Post, UseGuards } from "@nestjs/common";
 import { OrdersService } from "./orders.service";
 import { CreateOrderDto } from "./dto/create-order.dto";
-import { IdParamDto } from "src/dto/id-param.dto";
+import { IdParamDto } from "../../dto/id-param.dto";
 import { AuthGuard } from "../auth/auth.guard";
 
 @Controller('orders')

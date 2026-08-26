@@ -4,6 +4,7 @@ import { LoginUserDto } from "./dto/logis-user.dto";
 import * as bcrypt from 'bcrypt';
 import { SignupUserDto } from "./dto/signup-user.dto";
 import { JwtService } from "@nestjs/jwt";
+import { Role } from "./roles.enum";
 
 @Injectable()
 export class AuthService {
@@ -21,10 +22,12 @@ export class AuthService {
         const passwordValid = await bcrypt.compare(password,user.password);
         if(!passwordValid)throw new UnauthorizedException('Email o contraseña incorrectos');
         const token = this.jwtService.sign({
+            sub: user.id,
             id:user.id,
             email:user.email,
+            roles:[user.isAdmin ? Role.Admin : Role.User]
         });
-        const{password:_,...userWithoutPassword}=user;
+        const{password:_,isAdmin,...userWithoutPassword}=user;
         return{
             user: userWithoutPassword,
             token,

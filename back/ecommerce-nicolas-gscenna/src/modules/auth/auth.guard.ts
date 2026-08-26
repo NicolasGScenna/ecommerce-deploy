@@ -1,6 +1,5 @@
 import { CanActivate, ExecutionContext, Injectable, UnauthorizedException } from "@nestjs/common";
 import { JwtService } from "@nestjs/jwt";
-import { Observable } from "rxjs";
 
 @Injectable()
 export class AuthGuard implements CanActivate {
@@ -17,6 +16,8 @@ export class AuthGuard implements CanActivate {
 
         try {
             const playload = this.jwtService.verify(token);
+            playload.iat = new Date(playload.iat*1000);
+            playload.exp= new Date(playload.exp*1000);
             request.user= playload;
             request.tokenExpiration = playload.exp;
             return true;

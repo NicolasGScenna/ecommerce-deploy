@@ -11,13 +11,13 @@ export class UsersService {
     async getUsers(page:number,limit:number): Promise<Omit<User,'password'>[]>{
         return this.usersRepository.getUsers(page,limit);
     }
-    async getUserById(id:string): Promise<Omit<User,'password'|'orders'> | undefined>{
+    async getUserById(id:string): Promise<Omit<User,'password'|'orders'|'isAdmin'> | undefined>{
         return this.usersRepository.getById(id);
     }
     async createUser(user: Omit<User,'id'|'orders'>): Promise<string> {
         return this.usersRepository.createUser(user);
     }
-    async updateUser(id:string, user: Omit<User,'id'|'orders'>):Promise< string | undefined >{
+    async updateUser(id:string, user: Partial<Omit<User,'id'|'orders'|'isAdmin'>>):Promise< string | undefined >{
         return this.usersRepository.updateUser(id,user);
     }
     async deleteUser(id:string):Promise<string|undefined>{

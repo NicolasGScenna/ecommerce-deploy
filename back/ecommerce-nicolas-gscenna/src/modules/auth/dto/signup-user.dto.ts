@@ -1,5 +1,5 @@
 import { IsNotEmpty, IsString, Matches } from "class-validator";
-import { CreateUserDto } from "src/modules/users/dto/create-user.dto";
+import { CreateUserDto } from "../../users/dto/create-user.dto";
 
 export class SignupUserDto extends CreateUserDto{
     @IsNotEmpty()

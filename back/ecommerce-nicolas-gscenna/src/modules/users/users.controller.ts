@@ -2,14 +2,18 @@ import { Body, Controller, Delete, Get, NotFoundException, Param, ParseUUIDPipe,
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { AuthGuard } from '../auth/auth.guard';
-import { IdParamDto } from 'src/dto/id-param.dto';
+import { IdParamDto } from '../../dto/id-param.dto';
+import { Roles } from '../../decorators/roles.decorator';
+import { Role } from '../auth/roles.enum';
+import { RolesGuard } from '../auth/roles.guard';
 
 @Controller('users')
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
   @Get()
-  @UseGuards(AuthGuard)
+  @Roles(Role.Admin)
+  @UseGuards(AuthGuard,RolesGuard)
   async getUsers(@Query('page')page: string='1',@Query('limit')limit: string='5') {
     return this.usersService.getUsers(Number(page),Number(limit));
   }
