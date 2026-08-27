@@ -25,7 +25,7 @@ jobs:
       name: Build and push
       uses: docker/build-push-action@v5
       with :
-        context: .
+        context: ./back/ecommerce-nicolas-gscenna
         file: ./back/ecommerce-nicolas-gscenna/Dockerfile
         push: true
         tags: ${{ secrets.DOCKERHUB_USERNAME }}/ecommerce:latest
